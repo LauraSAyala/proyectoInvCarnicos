@@ -90,27 +90,30 @@ export default () => {
         });
     };
 
-    on(document, 'click', '.btnBorrar', async (e) => {
-        const fila = e.target.parentNode.parentNode;
-        const id = fila.firstElementChild.innerHTML;
+    on(divElement, 'click', '.btnBorrar', async (e) => {
+        const fila = e.target.closest('tr'); // Selecciona la fila actual
+        const id = fila.firstElementChild.innerText; // Toma el ID del cliente de la primera columna
 
-        if (confirm('¿Estás seguro de eliminar?')) {
+        if (confirm('¿Estás seguro de eliminar este cliente?')) {
             try {
                 const response = await fetch(`${url}/${id}`, { method: 'DELETE' });
                 if (response.ok) {
                     clientes = clientes.filter(cliente => cliente.idcliente != id);
-                    mostrarClientes(clientes);
+                    mostrarClientes(clientes); // Actualiza la tabla sin recargar la página
+                } else {
+                    console.error('Error al eliminar el cliente:', response.statusText);
+                    alert('Error al eliminar el cliente');
                 }
             } catch (error) {
-                console.error('Error al eliminar cliente:', error);
+                console.error('Error en la solicitud de eliminación:', error);
             }
         }
     });
 
-    on(document, 'click', '.btnEditar', (e) => {
-        const fila = e.target.parentNode.parentNode;
-        idForm = fila.firstElementChild.innerHTML;
-        nombreCliente.value = fila.children[1].innerHTML;
+    on(divElement, 'click', '.btnEditar', (e) => {
+        const fila = e.target.closest('tr');
+        idForm = fila.firstElementChild.innerText;
+        nombreCliente.value = fila.children[1].innerText;
         opcion = 'editar';
         modalCliente.show();
     });
