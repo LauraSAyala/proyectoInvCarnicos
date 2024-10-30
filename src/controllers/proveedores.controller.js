@@ -1,4 +1,4 @@
-import view from '../views/proveedores.html'
+import views from '../views/proveedores.html';
 
 export default () => {
     const divElement = document.createElement('div');
@@ -11,77 +11,79 @@ export default () => {
     const btnCrear = divElement.querySelector('#btnCrear');
     let opcion = '';
     let idForm = 0;
-    let clientes = [];
+    let proveedores = [];
 
-    // Botón Crear
     btnCrear.addEventListener('click', () => {
         nombreProveedor.value = '';
         modalProveedor.show();
         opcion = 'crear';
     });
 
-    const mostrarClientes = (clientes) => {
-        contenedor.innerHTML = clientes.map(cliente => `
+    const mostrarProveedores = (proveedores) => {
+        let resultados = '';
+        proveedores.innerHTML = ''; // Limpia los datos previos en el contenedor
+        proveedores.forEach(proveedores => {
+            resultados += `
             <tr>
-                <td>${cliente.idcliente}</td>
-                <td>${cliente.nombrecliente}</td>
+                <td>${proveedores.idproveedor}</td>
+                <td>${proveedores.nombreproveedor}</td>
                 <td class="text-center">
                     <a class="btnEditar btn btn-primary">Editar</a>
                     <a class="btnBorrar btn btn-danger">Borrar</a>
                 </td>
-            </tr>
-        `).join('');
+            </tr>`;
+        });
+        contenedor.innerHTML = resultados;
     };
+    
 
-    // Obtener clientes de la API
-    const cargarClientes = async () => {
+    const cargarProveedores = async () => {
         try {
             const response = await fetch(url);
-            clientes = await response.json();
-            mostrarClientes(clientes);
+            proveedores = await response.json();
+            mostrarProveedores(proveedores);
         } catch (error) {
-            console.error('Error al obtener los clientes:', error);
-            alert('No se pudieron cargar los clientes.');
+            console.error('Error al obtener los proveedores:', error);
+            alert('No se pudieron cargar los proveedores.');
         }
     };
-    cargarClientes();
+    cargarProveedores();
 
-    const formCliente = divElement.querySelector('form');
-    formCliente.addEventListener('submit', async (e) => {
+    const formProveedor = divElement.querySelector('form');
+    formProveedor.addEventListener('submit', async (e) => {
         e.preventDefault();
+        const proveedor = { nombreProveedor: nombreProveedor.value };
 
-        const cliente = { nombreCliente: nombreCliente.value };
         if (opcion === 'crear') {
             try {
                 const response = await fetch(url, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(cliente),
+                    body: JSON.stringify(proveedor),
                 });
-                const nuevoCliente = await response.json();
-                clientes.push(nuevoCliente);
-                mostrarClientes(clientes);
+                const nuevoProveedor = await response.json();
+                proveedores.push(nuevoProveedor);
+                mostrarProveedores(proveedores);
             } catch (error) {
-                console.error('Error al crear cliente:', error);
+                console.error('Error al crear proveedor:', error);
             }
         } else if (opcion === 'editar') {
             try {
                 const response = await fetch(`${url}/${idForm}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(cliente),
+                    body: JSON.stringify(proveedor),
                 });
-                const clienteActualizado = await response.json();
-                clientes = clientes.map(c => c.idcliente == idForm ? clienteActualizado : c);
-                mostrarClientes(clientes);
+                const proveedorActualizado = await response.json();
+                proveedores = proveedores.map(p => p.idproveedor == idForm ? proveedorActualizado : p);
+                mostrarProveedores(proveedores);
             } catch (error) {
-                console.error('Error al editar cliente:', error);
+                console.error('Error al editar proveedor:', error);
             }
         }
-        modalCliente.hide();
+        modalProveedor.hide();
     });
 
-    // Procedimiento para Borrar y Editar con Delegación de Eventos
     const on = (element, event, selector, handler) => {
         element.addEventListener(event, e => {
             if (e.target.closest(selector)) {
@@ -90,29 +92,32 @@ export default () => {
         });
     };
 
-    on(document, 'click', '.btnBorrar', async (e) => {
-        const fila = e.target.parentNode.parentNode;
-        const id = fila.firstElementChild.innerHTML;
+    on(divElement, 'click', '.btnBorrar', async (e) => {
+        const fila = e.target.closest('tr');
+        const id = fila.firstElementChild.innerText;
 
-        if (confirm('¿Estás seguro de eliminar?')) {
+        if (confirm('¿Estás seguro de eliminar este proveedor?')) {
             try {
                 const response = await fetch(`${url}/${id}`, { method: 'DELETE' });
                 if (response.ok) {
-                    clientes = clientes.filter(cliente => cliente.idcliente != id);
-                    mostrarClientes(clientes);
+                    proveedores = proveedores.filter(proveedor => proveedor.idproveedor != id);
+                    mostrarProveedores(proveedores);
+                } else {
+                    console.error('Error al eliminar el proveedor:', response.statusText);
+                    alert('Error al eliminar el proveedor');
                 }
             } catch (error) {
-                console.error('Error al eliminar cliente:', error);
+                console.error('Error en la solicitud de eliminación:', error);
             }
         }
     });
 
-    on(document, 'click', '.btnEditar', (e) => {
-        const fila = e.target.parentNode.parentNode;
-        idForm = fila.firstElementChild.innerHTML;
-        nombreCliente.value = fila.children[1].innerHTML;
+    on(divElement, 'click', '.btnEditar', (e) => {
+        const fila = e.target.closest('tr');
+        idForm = fila.firstElementChild.innerText;
+        nombreProveedor.value = fila.children[1].innerText;
         opcion = 'editar';
-        modalCliente.show();
+        modalProveedor.show();
     });
 
     return divElement;

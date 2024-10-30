@@ -21,17 +21,25 @@ export default () => {
     });
 
     const mostrarClientes = (clientes) => {
-        contenedor.innerHTML = clientes.map(cliente => `
-            <tr>
-                <td>${cliente.idcliente}</td>
-                <td>${cliente.nombrecliente}</td>
-                <td class="text-center">
-                    <a class="btnEditar btn btn-primary">Editar</a>
-                    <a class="btnBorrar btn btn-danger">Borrar</a>
-                </td>
-            </tr>
-        `).join('');
+        let resultados = ''; // Define la variable 'resultados' como un string vacío
+        contenedor.innerHTML = ''; // Limpia el contenedor antes de cargar nuevos datos
+    
+        clientes.forEach(cliente => {
+            resultados += `
+                <tr>
+                    <td>${cliente.idcliente}</td>
+                    <td>${cliente.nombrecliente}</td>
+                    <td class="text-center">
+                        <a class="btnEditar btn btn-primary">Editar</a>
+                        <a class="btnBorrar btn btn-danger">Borrar</a>
+                    </td>
+                </tr>`;
+        });
+    
+        contenedor.innerHTML = resultados; // Inserta los resultados en el contenedor
     };
+    
+    
 
     // Obtener clientes de la API
     const cargarClientes = async () => {

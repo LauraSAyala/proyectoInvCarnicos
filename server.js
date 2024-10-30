@@ -85,6 +85,68 @@ app.delete('/clientes/:id', (req, res) => {
     });
 });
 
+//PROVEEDORES 
+
+// Ruta para obtener todos los proveedores
+app.get('/proveedores', async (req, res) => {
+    try {
+        const result = await pool.query('SELECT idProveedor, nombreProveedor FROM proveedor');
+        res.status(200).json(result.rows);
+    } catch (err) {
+        console.error('Error al obtener proveedores', err.stack);
+        res.status(500).send('Error al obtener proveedores');
+    }
+});
+
+// Ruta para crear un nuevo proveedor
+app.post('/proveedores', async (req, res) => {
+    const { nombreProveedor } = req.body;
+    try {
+        const result = await pool.query(
+            'INSERT INTO proveedor (nombreProveedor) VALUES ($1) RETURNING *',
+            [nombreProveedor]
+        );
+        res.status(201).json(result.rows[0]);
+    } catch (err) {
+        console.error('Error al crear proveedor', err.stack);
+        res.status(500).send('Error al crear proveedor');
+    }
+});
+
+// Ruta para actualizar un proveedor
+app.put('/proveedores/:id', async (req, res) => {
+    const idProveedor = req.params.id;
+    const { nombreProveedor } = req.body;
+    try {
+        const result = await pool.query(
+            'UPDATE proveedor SET nombreProveedor = $1 WHERE idProveedor = $2 RETURNING *',
+            [nombreProveedor, idProveedor]
+        );
+        if (result.rows.length === 0) {
+            return res.status(404).send('Proveedor no encontrado');
+        }
+        res.status(200).json(result.rows[0]);
+    } catch (err) {
+        console.error('Error al actualizar proveedor', err.stack);
+        res.status(500).send('Error al actualizar proveedor');
+    }
+});
+
+// Ruta para eliminar un proveedor
+app.delete('/proveedores/:id', async (req, res) => {
+    const idProveedor = req.params.id;
+    try {
+        const result = await pool.query('DELETE FROM proveedor WHERE idProveedor = $1', [idProveedor]);
+        if (result.rowCount === 0) {
+            return res.status(404).json({ error: 'Proveedor no encontrado' });
+        }
+        res.status(200).json({ message: 'Proveedor eliminado correctamente' });
+    } catch (err) {
+        console.error('Error al eliminar proveedor', err.stack);
+        res.status(500).json({ error: 'Error al eliminar proveedor' });
+    }
+});
+
 // Iniciar el servidor
 app.listen(port, () => {
     console.log(`Servidor escuchando en http://localhost:${port}`);
