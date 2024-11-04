@@ -13,9 +13,6 @@ const router=(route)=>{
         case '#/Venta':{
             return content.appendChild(pages.ventas());
         }
-        case '#/Compra':{
-            return content.appendChild(pages.compras());
-        }
         case '#/Res':{
             return content.appendChild(pages.res());
         }
